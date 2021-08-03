@@ -31,7 +31,7 @@ req_headers = {
 
 # create url variables for each zillow page
 with requests.Session() as s:
-    city = 'austin/'  # *****change this city to what you want!!!!*****
+    city = 'boston/'  # *****change this city to what you want!!!!*****
 
     url = 'https://www.zillow.com/homes/for_sale/'+city
     url2 = 'https://www.zillow.com/homes/for_sale/'+city+'/2_p/'
