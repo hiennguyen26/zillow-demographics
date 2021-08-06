@@ -78,7 +78,7 @@ def demographic_analysis(rowzillow, rowmassdata):
     
     #Median age analysis:
     medianage = rowmassdata['median_age']
-    print("Median age of zip code is:" + str(medianage) + "years old.")
+    print("Median age of zip code is: " + str(medianage) + " years old.")
     priceofhome = rowzillow['price']
     medianvalueofhomes = rowmassdata['median_value_of_owner_occupied_units']
     percentdiffprice = (priceofhome - medianvalueofhomes) / medianvalueofhomes * 100
@@ -100,7 +100,8 @@ def demographic_analysis(rowzillow, rowmassdata):
     elif povertyrate > 50:
         print(r"You probably do not want this property")
     print("Unemployment rate of zip code is: " + str("{:.2f}".format((unemploymentrate * 100)) + "%"))
-    print("--------------Demographic analysis end -----------")
+    print("----------------------------------------------------------------------")
+    print()
     return
 
 
@@ -119,7 +120,8 @@ for index, rowzillow in zillow_props.iterrows():
             incomecheck = rowmassdata['median_household_income']
             #if income of zip code is below the threshhold level
             if incomecheck <= thresh:
-                print("property is undesired at " + rowzillow['address'] + ', ' + "since it is below the "  + str(thresh) + " income level")
+                print("[X] Property is undesired at " + rowzillow['address'] + ', ' + "since it is below the "  + str(thresh) + " income level")
+                print()
                 unwanted_props = unwanted_props.append(rowzillow, ignore_index=True)
             else:
                 # income level is above or equal the threshold. 
@@ -127,8 +129,9 @@ for index, rowzillow in zillow_props.iterrows():
                 percentThresh = ((incomecheck - thresh) / thresh)
                 if percentThresh <= 0.1:
                     print("[!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) + ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
-                    print("area of property: " + str(rowzillow['area']))
-                    print("days on market: " + str(rowzillow['days_on_zillow']))
+                    print("Property has " + str(rowzillow['bathrooms']) + " bathrooms, and " + str(rowzillow['bedrooms'] + " bedrooms."))
+                    print("Area of property: " + str(rowzillow['area']) + "sq ft.")
+                    print("Days on market: " + str(rowzillow['days_on_zillow']) + "days.")
                     #Demographic analysis:
                     demographic_analysis(rowzillow, rowmassdata)
                     #Append
@@ -136,24 +139,27 @@ for index, rowzillow in zillow_props.iterrows():
                 # if income level is close to 25 percent above the threshhold level
                 elif percentThresh <= 0.25:
                     print("[!!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) + ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
+                    print("Property has " + str(rowzillow['bathrooms']) + " bathrooms, and " + str(rowzillow['bedrooms'] + " bedrooms."))
                     print("Area of property: " + str(rowzillow['area']) + "sq ft.")
-                    print("Days on market: " + str(rowzillow['days_on_zillow']) + "days.")
+                    print("Days on market: " + str(rowzillow['days_on_zillow']) + " days.")
                     #Demographic analysis:
                     demographic_analysis(rowzillow, rowmassdata)
                     good_props25 = good_props40.append(rowzillow, ignore_index=True)
                 # if income level is close to 40 percent above the threshhold level
                 elif percentThresh <= 0.40:
                     print("[!!!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) + ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
-                    print("area of property: " + str(rowzillow['area']))
-                    print("days on market: " + str(rowzillow['days_on_zillow']))
+                    print("Property has " + str(rowzillow['bathrooms']) + " bathrooms, and " + str(rowzillow['bedrooms'] + " bedrooms."))
+                    print("Area of property: " + str(rowzillow['area']) + "sq ft.")
+                    print("Days on market: " + str(rowzillow['days_on_zillow']) + "days.")
                     #Demographic analysis:
                     demographic_analysis(rowzillow, rowmassdata)
                     good_props40 = good_props40.append(rowzillow, ignore_index=True)
                 # if income level is close to 80 percent above the threshhold level
                 elif percentThresh <= 0.80:
                     print("[!!!!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) + ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
-                    print("area of property: " + str(rowzillow['area']))
-                    print("days on market: " + str(rowzillow['days_on_zillow']))
+                    print("Property has " + str(rowzillow['bathrooms']) + " bathrooms, and " + str(rowzillow['bedrooms'] + " bedrooms."))
+                    print("Area of property: " + str(rowzillow['area']) + "sq ft.")
+                    print("Days on market: " + str(rowzillow['days_on_zillow']) + "days.")
                     #Demographic analysis:
                     demographic_analysis(rowzillow, rowmassdata)
                     good_props40 = good_props40.append(rowzillow, ignore_index=True)
