@@ -49,8 +49,18 @@ good_props25 = pd.DataFrame(columns=['address','price','bathrooms','bedrooms','a
 good_props40 = pd.DataFrame(columns=['address','price','bathrooms','bedrooms','area','zestimate','rent_zestimate','days_on_zillow','property_url','zip'])
 unwanted_props = pd.DataFrame( columns=['address','price','bathrooms','bedrooms','area','zestimate','rent_zestimate','days_on_zillow','property_url','zip'])
 
+# Function to sort hte list by second item of tuple
+def Sort_Tuple(tup): 
+  
+    # reverse = None (Sorts in Ascending order) 
+    # key is set to sort using second element of 
+    # sublist lambda has been used 
+    tup.sort(key = lambda x: x[1], reverse=True) 
+    return tup 
+
 #demographic analysis:
 def demographic_analysis(rowzillow, rowmassdata):
+    print("--------------Demographic analysis -----------")
     #Racial community analysis:
     white = ("White", rowmassdata['race_and_ethnicity_white'])
     black = ("Black", rowmassdata['race_and_ethnicity_black'])
@@ -60,19 +70,18 @@ def demographic_analysis(rowzillow, rowmassdata):
     islander = ("Islander", rowmassdata['race_and_ethnicity_islander'])
     native = ("Native", rowmassdata['race_and_ethnicity_native'])
     other = ("Other", rowmassdata['race_and_ethnicity_other'])
-    racialdemo = []
-    racialdemo.sort(reverse = True)
-    print(racialdemo)
-    print("Most populated race in zip code: " + str(sortedracial[0]) + "at " + str("{:.2f}".format(sortedracial[0] / rowmassdata['race_and_ethnicity_total'])) + r"% of total population") 
-    print("Second most populated race in zip code: " + str(sortedracial[1]) + "at " + str("{:.2f}".format(sortedracial[1] / rowmassdata['race_and_ethnicity_total'])) + r"% of total population") 
-    print("Third most populated race in zip code: " + str(sortedracial[2]) + "at " + str("{:.2f}".format(sortedracial[2] / rowmassdata['race_and_ethnicity_total'])) + r"% of total population") 
+    racialdemo = [white, black,asian, two, hispanic, islander, native, other]
+    sortedracial = Sort_Tuple(racialdemo)
+    print("Most populated race in zip code: " + str(sortedracial[0][0]) + " at " + str("{:.2f}".format(sortedracial[0][1] / rowmassdata['race_and_ethnicity_total'] * 100)) + r"% of total population") 
+    print("Second most populated race in zip code: " + str(sortedracial[1][0]) + " at " + str("{:.2f}".format(sortedracial[1][1] / rowmassdata['race_and_ethnicity_total'] * 100)) + r"% of total population") 
+    print("Third most populated race in zip code: " + str(sortedracial[2][0]) + " at " + str("{:.2f}".format(sortedracial[2][1] / rowmassdata['race_and_ethnicity_total'] * 100)) + r"% of total population") 
     
     #Median age analysis:
     medianage = rowmassdata['median_age']
-    print(medianage)
+    print("Median age of zip code is:" + str(medianage) + "years old.")
     priceofhome = rowzillow['price']
     medianvalueofhomes = rowmassdata['median_value_of_owner_occupied_units']
-    percentdiffprice = (medianvalueofhomes - priceofhome) / medianvalueofhomes * 100
+    percentdiffprice = (priceofhome - medianvalueofhomes) / medianvalueofhomes * 100
     #property price is above or below the median value of owner occupied units
     if priceofhome <= medianvalueofhomes:
         print("Property is priced below the median value of owner occupied units in the zip code by " + str("{:.2f}".format(percentdiffprice)) + "%")
@@ -82,13 +91,16 @@ def demographic_analysis(rowzillow, rowmassdata):
     #property zip code has high percentage of poverty
     povertyrate = rowmassdata['family_poverty_pct']
     unemploymentrate = rowmassdata['unemployment_pct']
-    if povertyrate > 10:
+    if povertyrate < 10:
+        print("Poverty rate is: " + str("{:.2f}".format(povertyrate * 100)) + "%")
+    elif povertyrate > 10:
         print(r"Poverty rate is above 10% in zip code")
     elif povertyrate > 25:
         print(r"A quarter of the zip code is in poverty")
     elif povertyrate > 50:
         print(r"You probably do not want this property")
-    print(unemploymentrate)
+    print("Unemployment rate of zip code is: " + str("{:.2f}".format((unemploymentrate * 100)) + "%"))
+    print("--------------Demographic analysis end -----------")
     return
 
 
@@ -124,8 +136,8 @@ for index, rowzillow in zillow_props.iterrows():
                 # if income level is close to 25 percent above the threshhold level
                 elif percentThresh <= 0.25:
                     print("[!!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) + ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
-                    print("area of property: " + str(rowzillow['area']))
-                    print("days on market: " + str(rowzillow['days_on_zillow']))
+                    print("Area of property: " + str(rowzillow['area']) + "sq ft.")
+                    print("Days on market: " + str(rowzillow['days_on_zillow']) + "days.")
                     #Demographic analysis:
                     demographic_analysis(rowzillow, rowmassdata)
                     good_props25 = good_props40.append(rowzillow, ignore_index=True)
