@@ -2,7 +2,7 @@
 from numpy import blackman, negative
 import pandas as pd
 
-zillow_props = pd.read_excel("./Scraped Data/Zillow/Properties_Zillow_Aug2.xlsx")
+zillow_props = pd.read_excel("./Scraped Data/Test_Files/Properties_test.xlsx")
 mass_data = pd.read_excel("Massachusetts_IncomeByZipDemographics.xlsx")
 
 def fix_zip(series):
@@ -41,7 +41,7 @@ print(mass_data.head())
 # directions = gmaps.directions(address, destination)
 
 #Filter all the adresses with a certain income threshhold by zip codes
-thresh = 90000
+thresh = 60000
 #Create good props dataframe
 
 good_props10 = pd.DataFrame(columns=['address','price','bathrooms','bedrooms','area','zestimate','rent_zestimate','days_on_zillow','property_url','zip'])
@@ -114,7 +114,9 @@ for index, rowzillow in zillow_props.iterrows():
         checkzipmass = rowmassdata['zip_code']
         if checkzip != checkzipmass:
             #print("cannot match zip code for: " + rowzillow['address'] + " at price: " + str(rowzillow['price']))
-            unwanted_props = unwanted_props.append(rowzillow, ignore_index=True)
+            unwantedToDF = pd.DataFrame(rowzillow)
+            pd.concat([unwantedToDF, unwanted_props])
+            print(unwantedToDF)
             continue
         else: 
             incomecheck = rowmassdata['median_household_income']
@@ -122,54 +124,58 @@ for index, rowzillow in zillow_props.iterrows():
             if incomecheck <= thresh:
                 print("[X] Property is undesired at " + rowzillow['address'] + ', ' + "since it is below the "  + str(thresh) + " income level")
                 print()
-                unwanted_props = unwanted_props.append(rowzillow, ignore_index=True)
-            else:
+                unwantedToDF = pd.DataFrame(rowzillow)
+                pd.concat([unwantedToDF, unwanted_props])
                 # income level is above or equal the threshold. 
                 # if income level is close to 10 percent above the threshhold level
+            else:
                 percentThresh = ((incomecheck - thresh) / thresh)
                 if percentThresh <= 0.1:
                     print("[!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) + ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
-                    print("Property has " + str(rowzillow['bathrooms']) + " bathrooms, and " + str(rowzillow['bedrooms'] + " bedrooms."))
+                    print("Property has " + str(rowzillow['bathrooms']) + " bathrooms, and " + str(rowzillow['bedrooms']) + " bedrooms.")
                     print("Area of property: " + str(rowzillow['area']) + "sq ft.")
                     print("Days on market: " + str(rowzillow['days_on_zillow']) + "days.")
                     #Demographic analysis:
                     demographic_analysis(rowzillow, rowmassdata)
                     #Append
-                    good_props10 = good_props40.append(rowzillow, ignore_index=True)
+                    TenToDF = pd.DataFrame(rowzillow)
+                    pd.concat([TenToDF, good_props10])
+                    print(TenToDF)
                 # if income level is close to 25 percent above the threshhold level
                 elif percentThresh <= 0.25:
                     print("[!!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) + ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
-                    print("Property has " + str(rowzillow['bathrooms']) + " bathrooms, and " + str(rowzillow['bedrooms'] + " bedrooms."))
+                    print("Property has " + str(rowzillow['bathrooms']) + " bathrooms, and " + str(rowzillow['bedrooms']) + " bedrooms.")
                     print("Area of property: " + str(rowzillow['area']) + "sq ft.")
                     print("Days on market: " + str(rowzillow['days_on_zillow']) + " days.")
                     #Demographic analysis:
                     demographic_analysis(rowzillow, rowmassdata)
-                    good_props25 = good_props40.append(rowzillow, ignore_index=True)
+                    TwentyFiveToDF = pd.DataFrame(rowzillow)
+                    pd.concat([TwentyFiveToDF, good_props25])
                 # if income level is close to 40 percent above the threshhold level
                 elif percentThresh <= 0.40:
                     print("[!!!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) + ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
-                    print("Property has " + str(rowzillow['bathrooms']) + " bathrooms, and " + str(rowzillow['bedrooms'] + " bedrooms."))
+                    print("Property has " + str(rowzillow['bathrooms']) + " bathrooms, and " + str(rowzillow['bedrooms']) + " bedrooms.")
                     print("Area of property: " + str(rowzillow['area']) + "sq ft.")
                     print("Days on market: " + str(rowzillow['days_on_zillow']) + "days.")
                     #Demographic analysis:
                     demographic_analysis(rowzillow, rowmassdata)
-                    good_props40 = good_props40.append(rowzillow, ignore_index=True)
+                    FourtyToDF = pd.DataFrame(rowzillow)
+                    pd.concat([FourtyToDF, good_props40])
                 # if income level is close to 80 percent above the threshhold level
                 elif percentThresh <= 0.80:
                     print("[!!!!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) + ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
-                    print("Property has " + str(rowzillow['bathrooms']) + " bathrooms, and " + str(rowzillow['bedrooms'] + " bedrooms."))
+                    print("Property has " + str(rowzillow['bathrooms']) + " bathrooms, and " + str(rowzillow['bedrooms']) + " bedrooms.")
                     print("Area of property: " + str(rowzillow['area']) + "sq ft.")
                     print("Days on market: " + str(rowzillow['days_on_zillow']) + "days.")
                     #Demographic analysis:
                     demographic_analysis(rowzillow, rowmassdata)
-                    good_props40 = good_props40.append(rowzillow, ignore_index=True)
+                    # good_props40 = good_props40.append(rowzillow, ignore_index=True)
 
 
     
 
 #Datetime thing
 import datetime
-import xlsxwriter 
 current_date_and_time = datetime.datetime.now()
 current_date_and_time_string = str(current_date_and_time)
 date = list(current_date_and_time_string)
