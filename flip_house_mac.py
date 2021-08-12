@@ -3,7 +3,7 @@ import datetime
 from numpy import blackman, negative
 import pandas as pd
 
-zillow_props = pd.read_excel("Scraped Data/Test_Files/Test_File.xlsx")
+listings_data = pd.read_excel("Scraped Data/Test_Files/Test_File.xlsx")
 mass_data = pd.read_excel("Massachusetts_IncomeByZipDemographics.xlsx")
 rent_data = pd.read_excel(
     "Scraped Data/Zillow/Properties_Zillow_Aug9_Rent.xlsx")
@@ -28,7 +28,6 @@ def correct_zillow_dataset(dataset):
     del dataset['latitude']
     del dataset['longitude']
     del dataset['currency']
-    del dataset['land_area']
     del dataset['sold_date']
     del dataset['is_zillow_owned']
     del dataset['image']
@@ -41,10 +40,10 @@ def correct_zillow_dataset(dataset):
 
 
 # Checking if the datasets are good
-correct_zillow_dataset(zillow_props)
+correct_zillow_dataset(listings_data)
 correct_zillow_dataset(rent_data)
 correct_zillow_dataset(sold_data)
-# print(zillow_props.head())
+# print(listings_data.head())
 # print(rent_data.head())
 # print(sold_data.head())
 
@@ -62,9 +61,11 @@ good_props40 = pd.DataFrame()
 good_props100 = pd.DataFrame()
 unwanted_props = pd.DataFrame()
 
+
+# Function to find average rent zestimate of listings in the same zip code:
+
+
 # Function to sort hte list by second item of tuple
-
-
 def Sort_Tuple(tup):
 
     # reverse = None (Sorts in Ascending order)
@@ -73,7 +74,7 @@ def Sort_Tuple(tup):
     tup.sort(key=lambda x: x[1], reverse=True)
     return tup
 
-# demographic analysis:
+# Demographic analysis:
 
 
 def demographic_analysis(rowzillow, rowmassdata):
@@ -147,9 +148,7 @@ def rent_analysis(row):
     zipcheck = row['zip']
     rent_zestimate = row['rent_zestimate']
     average_rentals = 0
-    counter_rentals = 1
-    counter_sold = 1
-    average_rent_sold = 0
+    counter_rentals = 0
     # find average rent in the same zip code of the same config
     for index, rowrent in rent_data.iterrows():
         if zipcheck == rowrent['zip']:
@@ -159,38 +158,48 @@ def rent_analysis(row):
                     counter_rentals += 1
         else:
             continue
-    ave_rent_listed = 0
-    ave_rent_listed += rent_zestimate
-    ave_rent_listed = average_rentals / counter_rentals
-    percentage_diff_rentlisted = (
-        rent_zestimate - ave_rent_listed) / rent_zestimate
-    # Analysis against listed rentals
-    if rent_zestimate > ave_rent_listed:
-        print("The property's rent zestimate is higher than average listed rent by " +
-              str("{:.2f}".format(percentage_diff_rentlisted*100)) + "%")
+    ave_rent_rentals = 0
+    # if it finds a rental within the zip code
+    if counter_rentals > 0:
+        ave_rent_rentals = average_rentals / counter_rentals
     else:
-        print("The property's rent zestimate is lower than average listed rent by " +
-              str("{:.2f}".format(percentage_diff_rentlisted*100)) + "%")
+        print("Cannot find other similar rentals for this zip code")
+    percentage_diff_rentals = (
+        rent_zestimate - ave_rent_rentals) / rent_zestimate
+    # Analysis against listed rentals
+    if rent_zestimate > ave_rent_rentals:
+        print("The property's rent zestimate is higher than average rentals in the area by " +
+              str("{:.2f}".format(percentage_diff_rentals*100)) + "%")
+    else:
+        print("The property's rent zestimate is lower than average rentals in the area by " +
+              str("{:.2f}".format(percentage_diff_rentals*100)) + "%")
+
     # find average rent zestimate in the same zip code of the same config for sold properties
-    for index, rowrent in sold_data.iterrows():
-        if zipcheck == rowrent['zip']:
-            if numbathrooms >= rowrent['bathrooms']:
-                if numbedrooms >= rowrent['bedrooms']:
-                    average_rent_sold += float(rowrent['rent_zestimate'])
+    counter_sold = 0
+    average_rent_sold = 0
+    for index, rowsold in sold_data.iterrows():
+        if zipcheck == rowsold['zip']:
+            if numbathrooms >= rowsold['bathrooms']:
+                if numbedrooms >= rowsold['bedrooms']:
+                    average_rent_sold += float(rowsold['rent_zestimate'])
+                    counter_sold += 1
         else:
             continue
-    average_rent_sold = 0
-    average_rent_sold += rent_zestimate
-    average_rent_sold = average_rent_sold / counter_sold
+    ave_rent_sold = 0
+    if counter_sold > 0:
+        ave_rent_sold = average_rent_sold / counter_sold
+    else:
+        print("Cannot find other similar sold houses for this zip code")
     percentage_diff_rentsold = (
-        rent_zestimate - average_rent_sold) / rent_zestimate
-    if rent_zestimate > average_rent_sold:
-        print("The property's rent zestimate is higher than average listed rent by " +
+        rent_zestimate - ave_rent_sold) / rent_zestimate
+    # Analysis against sold houses rent zestimates
+    if rent_zestimate > ave_rent_sold:
+        print("The property's rent zestimate is higher than average sold rent zestimate in the area by " +
               str("{:.2f}".format(percentage_diff_rentsold*100)) + "%")
         print("----------------------------------------------------------------------")
         print()
     else:
-        print("The property's rent zestimate is lower than average listed rent by " +
+        print("The property's rent zestimate is lower than average sold rent zestimate in the area by " +
               str("{:.2f}".format(percentage_diff_rentsold*100)) + "%")
         print("----------------------------------------------------------------------")
         print()
@@ -203,7 +212,7 @@ list_40 = []
 list_100 = []
 
 # Filtering real estate for loops and insert to worksheets
-for index, rowzillow in zillow_props.iterrows():
+for index, rowzillow in listings_data.iterrows():
     #print(prop, row['zip'], row['address'])
     # failsafe zip doesn't exist in the other spreadsheet
     checkzip = rowzillow['zip']
@@ -228,6 +237,7 @@ for index, rowzillow in zillow_props.iterrows():
                     # Demographic analysis:
                     demographic_analysis(rowzillow, rowmassdata)
                     rent_analysis(rowzillow)
+
                     list_10.append(rowzillow)
                 # if income level is close to 25 percent above the threshhold level
                 elif percentThresh <= 0.25:
@@ -292,7 +302,7 @@ good_props25.to_excel(writer, sheet_name='25 Percent', index=False)
 good_props40.to_excel(writer, sheet_name='40 Percent', index=False)
 good_props100.to_excel(writer, sheet_name='100 Percent', index=False)
 unwanted_props.to_excel(writer, sheet_name='Unwanted', index=False)
-zillow_props.to_excel(writer, sheet_name="full_data", index=False)
+listings_data.to_excel(writer, sheet_name="full_data", index=False)
 
 
 # save
