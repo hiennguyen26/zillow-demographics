@@ -82,7 +82,7 @@ thresh = 65000
 #Create good props dataframe
 
 good_props10 = pd.DataFrame()
-good_props25 = pd.DataFrame()
+good_props25 = pd.DataFrame() 
 good_props40 = pd.DataFrame()
 good_props100 = pd.DataFrame()
 unwanted_props = pd.DataFrame()
