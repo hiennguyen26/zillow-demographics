@@ -2,7 +2,7 @@
 from numpy import blackman, negative
 import pandas as pd
 
-zillow_props = pd.read_excel("Scraped Data/Zillow/Properties_Zillow_Aug18_Below700K.xlsx")
+zillow_props = pd.read_excel("Scraped Data/Test_Files/Test_File.xlsx")
 mass_data = pd.read_excel("Massachusetts_IncomeByZipDemographics.xlsx")
 rent_data = pd.read_excel("Scraped Data/Zillow/Properties_Zillow_Aug9_Rent.xlsx")
 sold_data = pd.read_excel("Scraped Data/Zillow/Properties_Sold_Aug9.xlsx")
@@ -25,15 +25,17 @@ def correct_zillow_dataset(dataset):
     del dataset['latitude']
     del dataset['longitude']
     del dataset['currency']
-    del dataset['land_area']
     del dataset['sold_date']
     del dataset['is_zillow_owned']
     del dataset['image']
+    del dataset['land_area']
     del dataset['listing_type']
     del dataset['broker_name']
     del dataset['input']
     del dataset['listing_url']
     dataset['area'] = dataset['area'].str.replace("sqft", "")
+    dataset['$/sqft'] = ""
+    dataset['compare_$sqft_sold_inZip'] = ""
     dataset['household_median_income_on_threshold'] = ""
     dataset['most_populated'] = ""
     dataset['second_most_populated'] = ""
@@ -44,6 +46,7 @@ def correct_zillow_dataset(dataset):
     dataset['unemployment_rate'] = ""
     dataset['rent_zestimate_rentals'] = ""
     dataset['rent_zestimate_sold'] = ""
+    
     return dataset
     
 #Correct scraped zillow data set
@@ -73,7 +76,6 @@ correct_supportingzillow_dataset(sold_data)
 
 
 #Create good props dataframe
-
 good_props10 = pd.DataFrame()
 good_props25 = pd.DataFrame() 
 good_props40 = pd.DataFrame()
@@ -122,7 +124,6 @@ def demographic_analysis(rowzillow, rowmassdata):
     elif priceofhome >= medianvalueofhomes:
         rowzillow['median_house_value'] = "Above by " + str("{:.2f}".format(percentdiffprice)) + "%"
         print("Property is priced above the median value of owner occupied units in the zip code by " + str("{:.2f}".format(percentdiffprice)) + "%")
-        
     #property zip code has high percentage of poverty
     povertyrate = rowmassdata['family_poverty_pct']
     unemploymentrate = rowmassdata['unemployment_pct']
@@ -152,9 +153,41 @@ def property_basic_analysis(row):
 #Price per sq feet analysis:
 def pricesqfeet_analysis(rowzillow, rowmassdata):
     #TODO:
-    #Method 1: Compare price per sqfeet with average price per sq feet of sold listings in zip code 
+    #Print sq feet and calculate sqfeet
+    housevalue = float(rowzillow['price'])
+    livingarea = float(rowzillow['area'])
+    pricesqfeet = housevalue / livingarea
+    zipcheck = rowzillow['zip']
+    total_sold_persqfeet = 0
+    rowzillow['$/sqft'] = "$" + str("{:.0f}".format(pricesqfeet))
+    counter_sold = 0 
+    #Method 1: Compare price per sqfeet with average price per sq feet of sold listings in zip code
+    for index, rowsold in sold_data.iterrows():
+        sold_housevalue = float(rowsold['price'])
+        sold_livingarea = float(rowsold['area']) 
+        sold_pricesqfeet = (sold_housevalue / sold_livingarea)
+        if zipcheck == rowsold['zip']:
+            total_sold_persqfeet += sold_pricesqfeet
+            counter_sold += 1
+        else:
+            continue
+        average_sold_persqfeet = 0
+        if counter_sold > 0:
+            average_sold_persqfeet = total_sold_persqfeet / counter_sold
+        else: 
+            rowzillow['compare_$sqft_sold_inZip'] = "Cannot find other homes to compare"
+            print("Cannot find other homes within the zip code")
+        percentage_diff_sold = (pricesqfeet - average_sold_persqfeet) / pricesqfeet
+    # Analysis against listed rentals
+    if pricesqfeet > average_sold_persqfeet:
+        rowzillow['compare_$sqft_sold_inZip'] = "Higher by " + str("{:.2f}".format(percentage_diff_sold*100)) + "%"
+        print("The property's price per sq feet is higher than average sold's in the area by " +str("{:.2f}".format(percentage_diff_sold*100)) + "%")
+    else:
+        rowzillow['compare_$sqft_sold_inZip'] = "Lower by " + str("{:.2f}".format(percentage_diff_sold*100)) + "%"
+        print("The property's price per sq feet is lower than average sold's in the area by " +str("{:.2f}".format(percentage_diff_sold*100)) + "%")
     #Method 2: Compare price per sqfeet with average price per sq feet of listings in zip code 
     #Method 3: Compare price per sqfeet with average price per sq feet of listings in town
+    #Method 3: Compare price per sqfeet with average price per sq feet of listings in Boston
     #Method 4: Compare RENTABLE price per sqfeet with average price per sq feet of listings in zip code
     #Method 5: Compare RENTABLE price per sqfeet with average price per sq feet of listings in town
     return
@@ -170,21 +203,21 @@ def rent_analysis(row):
     numbathrooms = row['bathrooms']
     zipcheck = row['zip']
     rent_zestimate = row['rent_zestimate']
-    average_rentals = 0
+    total_rentals = 0
     counter_rentals = 0
     # find average rent in the same zip code of the same config
     for index, rowrent in rent_data.iterrows():
         if zipcheck == rowrent['zip']:
             if numbathrooms >= rowrent['bathrooms']:
                 if numbedrooms >= rowrent['bedrooms']:
-                    average_rentals += float(rowrent['price'])
+                    total_rentals += float(rowrent['price'])
                     counter_rentals += 1
         else:
             continue
     ave_rent_rentals = 0
     # if it finds a rental within the zip code
     if counter_rentals > 0:
-        ave_rent_rentals = average_rentals / counter_rentals
+        ave_rent_rentals = total_rentals / counter_rentals
     else:
         print("Cannot find other similar rentals for this zip code")
     percentage_diff_rentals = (
@@ -263,6 +296,8 @@ for index, rowzillow in zillow_props.iterrows():
                     rowzillow['household_median_income_on_threshold'] = str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold"
                     print("[!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) + ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
                     property_basic_analysis(rowzillow)
+                    #$/sqfeet analysis:
+                    pricesqfeet_analysis(rowzillow,rowmassdata)
                     #Demographic analysis:
                     demographic_analysis(rowzillow, rowmassdata)
                     rent_analysis(rowzillow)
@@ -272,6 +307,8 @@ for index, rowzillow in zillow_props.iterrows():
                     rowzillow['household_median_income_on_threshold'] = str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold"
                     print("[!!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) + ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
                     property_basic_analysis(rowzillow)
+                    #$/sqfeet analysis:
+                    pricesqfeet_analysis(rowzillow,rowmassdata)
                     #Demographic analysis:
                     demographic_analysis(rowzillow, rowmassdata)
                     rent_analysis(rowzillow)
@@ -281,6 +318,8 @@ for index, rowzillow in zillow_props.iterrows():
                     rowzillow['household_median_income_on_threshold'] = str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold"
                     print("[!!!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) + ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
                     property_basic_analysis(rowzillow)
+                    #$/sqfeet analysis:
+                    pricesqfeet_analysis(rowzillow,rowmassdata)
                     #Demographic analysis:
                     demographic_analysis(rowzillow, rowmassdata)
                     rent_analysis(rowzillow)
@@ -290,6 +329,8 @@ for index, rowzillow in zillow_props.iterrows():
                     rowzillow['household_median_income_on_threshold'] = str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold"
                     print("[!!!!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) + ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
                     property_basic_analysis(rowzillow)
+                    #$/sqfeet analysis:
+                    pricesqfeet_analysis(rowzillow,rowmassdata)
                     #Demographic analysis:
                     demographic_analysis(rowzillow, rowmassdata)
                     rent_analysis(rowzillow)
@@ -298,7 +339,7 @@ for index, rowzillow in zillow_props.iterrows():
             continue
             
 
-unwanted_props = pd.concat(unwanted_list, axis=1,join='outer').reset_index()
+unwanted_props = pd.concat(unwanted_list, axis=1).reset_index()
 good_props10 = pd.concat(list_10, axis=1,join='outer').reset_index()
 good_props25 = pd.concat(list_25, axis=1,join='outer').reset_index()
 good_props100 = pd.concat(list_100, axis=1,join='outer').reset_index()
