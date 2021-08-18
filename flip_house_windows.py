@@ -67,14 +67,6 @@ def correct_supportingzillow_dataset(dataset):
 correct_zillow_dataset(zillow_props)
 correct_supportingzillow_dataset(rent_data)
 correct_supportingzillow_dataset(sold_data)
-# print(zillow_props.head())
-# print(rent_data.head())
-# print(sold_data.head())
-
-# #Checking if the datasets are good
-# print(mass_data.head())
-
-
 
 #Filter all the adresses with a certain income threshhold by zip codes
 thresh = 60000
