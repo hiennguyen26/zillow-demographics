@@ -7,6 +7,9 @@ mass_data = pd.read_excel("Massachusetts_IncomeByZipDemographics.xlsx")
 rent_data = pd.read_excel("Scraped Data/Zillow/Properties_Zillow_Aug9_Rent.xlsx")
 sold_data = pd.read_excel("Scraped Data/Zillow/Properties_Sold_Aug9.xlsx")
 
+#Filter all the adresses with a certain income threshhold by zip codes
+thresh = 60000
+
 def fix_zip(series):
       return series.astype(str).str.extract('(\d+)', expand=False).str.zfill(5)
 
@@ -68,8 +71,7 @@ correct_zillow_dataset(zillow_props)
 correct_supportingzillow_dataset(rent_data)
 correct_supportingzillow_dataset(sold_data)
 
-#Filter all the adresses with a certain income threshhold by zip codes
-thresh = 60000
+
 #Create good props dataframe
 
 good_props10 = pd.DataFrame()
