@@ -116,7 +116,7 @@ def demographic_analysis(rowzillow, rowmassdata):
     print("Third most populated race in zip code: " + str(sortedracial[2][0]) + " at " + str("{:.2f}".format(sortedracial[2][1] / rowmassdata['race_and_ethnicity_total'] * 100)) + r"% of total population") 
     #Median age analysis:
     medianage = rowmassdata['median_age']
-    rowzillow['median_age'] = str(medianage) + " years old."
+    rowzillow['median_age'] = str(medianage)
     print("Median age of zip code is: " + str(medianage) + " years old.")
     priceofhome = rowzillow['price']
     medianvalueofhomes = rowmassdata['median_value_of_owner_occupied_units']
@@ -155,8 +155,21 @@ def property_basic_analysis(row):
     print("Days on market: " + str(row['days_on_zillow']) + " days.")
     return
 
+#Price per sq feet analysis:
+def pricesqfeet_analysis(rowzillow, rowmassdata):
+    #TODO:
+    #Method 1: Compare price per sqfeet with average price per sq feet of sold listings in zip code 
+    #Method 2: Compare price per sqfeet with average price per sq feet of listings in zip code 
+    #Method 3: Compare price per sqfeet with average price per sq feet of listings in town
+    #Method 4: Compare RENTABLE price per sqfeet with average price per sq feet of listings in zip code
+    #Method 5: Compare RENTABLE price per sqfeet with average price per sq feet of listings in town
+    return
+    
+
 
 # take in a zip code and find the percentage change on the average rent of similar house with same configuration in that zip code across datasets
+#TODO: Checks for both: Higher by 100% possible, lower by nan% possible
+#TODO: Rent zestimates compared to listings dataset
 def rent_analysis(row):
     print("--------------Rent Analysis -----------")
     numbedrooms = row['bedrooms']
@@ -164,10 +177,8 @@ def rent_analysis(row):
     zipcheck = row['zip']
     rent_zestimate = row['rent_zestimate']
     average_rentals = 0
-    counter_rentals = 1
-    counter_sold = 1
-    average_rent_sold = 0
-    #find average rent in the same zip code of the same config
+    counter_rentals = 0
+    # find average rent in the same zip code of the same config
     for index, rowrent in rent_data.iterrows():
         if zipcheck == rowrent['zip']:
             if numbathrooms >= rowrent['bathrooms']:
@@ -176,40 +187,58 @@ def rent_analysis(row):
                     counter_rentals += 1
         else:
             continue
-    ave_rent_listed = 0
-    ave_rent_listed += rent_zestimate
-    ave_rent_listed = average_rentals / counter_rentals 
-    percentage_diff_rentlisted = (rent_zestimate - ave_rent_listed) / rent_zestimate
-    #Analysis against listed rentals
-    if rent_zestimate > ave_rent_listed:
-        rowzillow['rent_zestimate_rentals'] = "Higher by " + str("{:.2f}".format(percentage_diff_rentlisted*100)) + "%"
-        print("The property's rent zestimate is higher than average listed rent by " + str("{:.2f}".format(percentage_diff_rentlisted*100)) + "%")
+    ave_rent_rentals = 0
+    # if it finds a rental within the zip code
+    if counter_rentals > 0:
+        ave_rent_rentals = average_rentals / counter_rentals
     else:
-        rowzillow['rent_zestimate_rentals'] = "Lower by " + str("{:.2f}".format(percentage_diff_rentlisted*100)) + "%"
-        print("The property's rent zestimate is lower than average listed rent by " + str("{:.2f}".format(percentage_diff_rentlisted*100)) + "%")
-    ####    
-    #find average rent zestimate in the same zip code of the same config for sold properties
-    for index, rowrent in sold_data.iterrows():
-        if zipcheck == rowrent['zip']:
-            if numbathrooms >= rowrent['bathrooms']:
-                if numbedrooms >= rowrent['bedrooms']:
-                    average_rent_sold += float(rowrent['rent_zestimate'])
+        print("Cannot find other similar rentals for this zip code")
+    percentage_diff_rentals = (
+        rent_zestimate - ave_rent_rentals) / rent_zestimate
+    # Analysis against listed rentals
+    if rent_zestimate > ave_rent_rentals:
+        rowzillow['rent_zestimate_rentals'] = "Higher by " + str("{:.2f}".format(percentage_diff_rentals*100)) + "%"
+        print("The property's rent zestimate is higher than average rentals in the area by " +
+              str("{:.2f}".format(percentage_diff_rentals*100)) + "%")
+    else:
+        rowzillow['rent_zestimate_rentals'] = "Lower by " + str("{:.2f}".format(percentage_diff_rentals*100)) + "%"
+        print("The property's rent zestimate is lower than average rentals in the area by " +
+              str("{:.2f}".format(percentage_diff_rentals*100)) + "%")
+
+    # find average rent zestimate in the same zip code of the same config for sold properties
+    counter_sold = 0
+    average_rent_sold = 0
+    for index, rowsold in sold_data.iterrows():
+        if zipcheck == rowsold['zip']:
+            if numbathrooms >= rowsold['bathrooms']:
+                if numbedrooms >= rowsold['bedrooms']:
+                    average_rent_sold += float(rowsold['rent_zestimate'])
+                    counter_sold += 1
         else:
             continue
-    average_rent_sold = 0
-    average_rent_sold += rent_zestimate
-    average_rent_sold = average_rent_sold / counter_sold 
-    percentage_diff_rentsold = (rent_zestimate - average_rent_sold) / rent_zestimate
-    if rent_zestimate > average_rent_sold:
+    ave_rent_sold = 0
+    if counter_sold > 0:
+        ave_rent_sold = average_rent_sold / counter_sold
+    else:
+        print("Cannot find other similar sold houses for this zip code")
+    percentage_diff_rentsold = (
+        rent_zestimate - ave_rent_sold) / rent_zestimate
+    # Analysis against sold houses rent zestimates
+    if rent_zestimate > ave_rent_sold:
         rowzillow['rent_zestimate_sold'] = "Higher by " + str("{:.2f}".format(percentage_diff_rentsold*100)) + "%"
-        print("The property's rent zestimate is higher than average listed rent by " + str("{:.2f}".format(percentage_diff_rentsold*100)) + "%")
+        print("The property's rent zestimate is higher than average sold rent zestimate in the area by " +
+              str("{:.2f}".format(percentage_diff_rentsold*100)) + "%")
         print("----------------------------------------------------------------------")
         print()
     else:
         rowzillow['rent_zestimate_sold'] = "Lower by " + str("{:.2f}".format(percentage_diff_rentsold*100)) + "%"
-        print("The property's rent zestimate is lower than average listed rent by " + str("{:.2f}".format(percentage_diff_rentsold*100)) + "%") 
+        print("The property's rent zestimate is lower than average sold rent zestimate in the area by " +
+              str("{:.2f}".format(percentage_diff_rentsold*100)) + "%")
         print("----------------------------------------------------------------------")
         print()
+
+######################
+
 
 unwanted_list = []
 list_10 = []
