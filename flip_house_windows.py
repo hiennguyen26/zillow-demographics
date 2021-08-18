@@ -2,7 +2,7 @@
 from numpy import blackman, negative
 import pandas as pd
 
-zillow_props = pd.read_excel("Scraped Data/Test_Files/Test_File.xlsx")
+zillow_props = pd.read_excel("Scraped Data/Zillow/Properties_Zillow_Aug18_Below700K.xlsx")
 mass_data = pd.read_excel("Massachusetts_IncomeByZipDemographics.xlsx")
 rent_data = pd.read_excel("Scraped Data/Zillow/Properties_Zillow_Aug9_Rent.xlsx")
 sold_data = pd.read_excel("Scraped Data/Zillow/Properties_Sold_Aug9.xlsx")
@@ -31,8 +31,7 @@ def correct_zillow_dataset(dataset):
     del dataset['input']
     del dataset['listing_url']
     dataset['area'] = dataset['area'].str.replace("sqft", "")
-    dataset['desirability'] = ""
-    dataset['rent_analysis'] = ""
+    dataset['household_median_income_on_threshold'] = ""
     dataset['most_populated'] = ""
     dataset['second_most_populated'] = ""
     dataset['third_most_populated'] = ""
@@ -109,32 +108,32 @@ def demographic_analysis(rowzillow, rowmassdata):
     other = ("Other", rowmassdata['race_and_ethnicity_other'])
     racialdemo = [white, black,asian, two, hispanic, islander, native, other]
     sortedracial = Sort_Tuple(racialdemo)
-    rowzillow['most_populated'] = str(sortedracial[0][0]) + " at " + str("{:.2f}".format(sortedracial[0][1] / rowmassdata['race_and_ethnicity_total'] * 100)) + r"% of total population"
-    rowzillow['second_most_populated'] = str(sortedracial[1][0]) + " at " + str("{:.2f}".format(sortedracial[1][1] / rowmassdata['race_and_ethnicity_total'] * 100)) + r"% of total population"
-    rowzillow['third_most_populated'] = str(sortedracial[2][0]) + " at " + str("{:.2f}".format(sortedracial[2][1] / rowmassdata['race_and_ethnicity_total'] * 100)) + r"% of total population"
+    rowzillow['most_populated'] = str(sortedracial[0][0]) + " at " + str("{:.2f}".format(sortedracial[0][1] / rowmassdata['race_and_ethnicity_total'] * 100)) + "%"
+    rowzillow['second_most_populated'] = str(sortedracial[1][0]) + " at " + str("{:.2f}".format(sortedracial[1][1] / rowmassdata['race_and_ethnicity_total'] * 100)) + "%"
+    rowzillow['third_most_populated'] = str(sortedracial[2][0]) + " at " + str("{:.2f}".format(sortedracial[2][1] / rowmassdata['race_and_ethnicity_total'] * 100)) + "%"
     print("Most populated race in zip code: " + str(sortedracial[0][0]) + " at " + str("{:.2f}".format(sortedracial[0][1] / rowmassdata['race_and_ethnicity_total'] * 100)) + r"% of total population") 
     print("Second most populated race in zip code: " + str(sortedracial[1][0]) + " at " + str("{:.2f}".format(sortedracial[1][1] / rowmassdata['race_and_ethnicity_total'] * 100)) + r"% of total population") 
     print("Third most populated race in zip code: " + str(sortedracial[2][0]) + " at " + str("{:.2f}".format(sortedracial[2][1] / rowmassdata['race_and_ethnicity_total'] * 100)) + r"% of total population") 
     #Median age analysis:
     medianage = rowmassdata['median_age']
-    rowzillow['median_age'] = "Median age of zip code is: " + str(medianage) + " years old."
+    rowzillow['median_age'] = str(medianage) + " years old."
     print("Median age of zip code is: " + str(medianage) + " years old.")
     priceofhome = rowzillow['price']
     medianvalueofhomes = rowmassdata['median_value_of_owner_occupied_units']
     percentdiffprice = (priceofhome - medianvalueofhomes) / medianvalueofhomes * 100
     #property price is above or below the median value of owner occupied units
     if priceofhome <= medianvalueofhomes:
-        rowzillow['median_house_value'] = "Below median value of owner occupied units in the zip code by " + str("{:.2f}".format(percentdiffprice)) + "%"
+        rowzillow['median_house_value'] = "Below by " + str("{:.2f}".format(percentdiffprice)) + "%"
         print("Property is priced below the median value of owner occupied units in the zip code by " + str("{:.2f}".format(percentdiffprice)) + "%")
     elif priceofhome >= medianvalueofhomes:
-        rowzillow['median_house_value'] = "Above median value of owner occupied units in the zip code by " + str("{:.2f}".format(percentdiffprice)) + "%"
+        rowzillow['median_house_value'] = "Above by " + str("{:.2f}".format(percentdiffprice)) + "%"
         print("Property is priced above the median value of owner occupied units in the zip code by " + str("{:.2f}".format(percentdiffprice)) + "%")
         
     #property zip code has high percentage of poverty
     povertyrate = rowmassdata['family_poverty_pct']
     unemploymentrate = rowmassdata['unemployment_pct']
     if povertyrate < 10:
-        rowzillow['poverty_rate'] = "Poverty rate is: " + str("{:.2f}".format(povertyrate * 100)) + "%"
+        rowzillow['poverty_rate'] = str("{:.2f}".format(povertyrate * 100)) + "%"
         print("Poverty rate is: " + str("{:.2f}".format(povertyrate * 100)) + "%")
     elif povertyrate > 10:
         rowzillow['poverty_rate'] = r"Poverty rate is above 10% in zip code"
@@ -145,7 +144,7 @@ def demographic_analysis(rowzillow, rowmassdata):
     elif povertyrate > 50:
         rowzillow['poverty_rate'] = r"You probably do not want this property"
         print(r"You probably do not want this property")
-    rowzillow['unemployment_rate'] = "Unemployment rate of zip code is: " + str("{:.2f}".format((unemploymentrate * 100)) + "%")
+    rowzillow['unemployment_rate'] = str("{:.2f}".format((unemploymentrate * 100)) + "%")
     print("Unemployment rate of zip code is: " + str("{:.2f}".format((unemploymentrate * 100)) + "%"))
     return
 
@@ -183,10 +182,10 @@ def rent_analysis(row):
     percentage_diff_rentlisted = (rent_zestimate - ave_rent_listed) / rent_zestimate
     #Analysis against listed rentals
     if rent_zestimate > ave_rent_listed:
-        rowzillow['rent_zestimate_rentals'] = "Higher than average listed rentals by " + str("{:.2f}".format(percentage_diff_rentlisted*100)) + "%"
+        rowzillow['rent_zestimate_rentals'] = "Higher by " + str("{:.2f}".format(percentage_diff_rentlisted*100)) + "%"
         print("The property's rent zestimate is higher than average listed rent by " + str("{:.2f}".format(percentage_diff_rentlisted*100)) + "%")
     else:
-        rowzillow['rent_zestimate_rentals'] = "Lower than average listed rentals by " + str("{:.2f}".format(percentage_diff_rentlisted*100)) + "%"
+        rowzillow['rent_zestimate_rentals'] = "Lower by " + str("{:.2f}".format(percentage_diff_rentlisted*100)) + "%"
         print("The property's rent zestimate is lower than average listed rent by " + str("{:.2f}".format(percentage_diff_rentlisted*100)) + "%")
     ####    
     #find average rent zestimate in the same zip code of the same config for sold properties
@@ -202,12 +201,12 @@ def rent_analysis(row):
     average_rent_sold = average_rent_sold / counter_sold 
     percentage_diff_rentsold = (rent_zestimate - average_rent_sold) / rent_zestimate
     if rent_zestimate > average_rent_sold:
-        rowzillow['rent_zestimate_sold'] = "Higher than average sold properties rent zestimate by " + str("{:.2f}".format(percentage_diff_rentsold*100)) + "%"
+        rowzillow['rent_zestimate_sold'] = "Higher by " + str("{:.2f}".format(percentage_diff_rentsold*100)) + "%"
         print("The property's rent zestimate is higher than average listed rent by " + str("{:.2f}".format(percentage_diff_rentsold*100)) + "%")
         print("----------------------------------------------------------------------")
         print()
     else:
-        rowzillow['rent_zestimate_sold'] = "Lower than average sold properties rent zestimate by " + str("{:.2f}".format(percentage_diff_rentsold*100)) + "%"
+        rowzillow['rent_zestimate_sold'] = "Lower by " + str("{:.2f}".format(percentage_diff_rentsold*100)) + "%"
         print("The property's rent zestimate is lower than average listed rent by " + str("{:.2f}".format(percentage_diff_rentsold*100)) + "%") 
         print("----------------------------------------------------------------------")
         print()
@@ -229,7 +228,7 @@ for index, rowzillow in zillow_props.iterrows():
             incomecheck = rowmassdata['median_household_income']
             #if income of zip code is below the threshhold level
             if incomecheck <= thresh:
-                rowzillow['desirability'] = "[X] Property is undesired at " + rowzillow['address'] + ', ' + "since it is below the "  + str(thresh) + " income level"
+                rowzillow['household_median_income_on_threshold'] = "[X] Property is undesired at " + rowzillow['address'] + ', ' + "since it is below the "  + str(thresh) + " income level"
                 print("[X] Property is undesired at " + rowzillow['address'] + ', ' + "since it is below the "  + str(thresh) + " income level")
                 print()
                 unwanted_list.append(rowzillow)
@@ -238,7 +237,7 @@ for index, rowzillow in zillow_props.iterrows():
             else:
                 percentThresh = ((incomecheck - thresh) / thresh)
                 if percentThresh <= 0.1:
-                    rowzillow['desirability'] = "Average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold"
+                    rowzillow['household_median_income_on_threshold'] = str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold"
                     print("[!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) + ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
                     property_basic_analysis(rowzillow)
                     #Demographic analysis:
@@ -247,7 +246,7 @@ for index, rowzillow in zillow_props.iterrows():
                     list_10.append(rowzillow)
                 # if income level is close to 25 percent above the threshhold level
                 elif percentThresh <= 0.25:
-                    rowzillow['desirability'] = "Average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold"
+                    rowzillow['household_median_income_on_threshold'] = str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold"
                     print("[!!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) + ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
                     property_basic_analysis(rowzillow)
                     #Demographic analysis:
@@ -256,7 +255,7 @@ for index, rowzillow in zillow_props.iterrows():
                     list_25.append(rowzillow)
                 # if income level is close to 40 percent above the threshhold level
                 elif percentThresh <= 0.40:
-                    rowzillow['desirability'] = "Average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold"
+                    rowzillow['household_median_income_on_threshold'] = str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold"
                     print("[!!!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) + ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
                     property_basic_analysis(rowzillow)
                     #Demographic analysis:
@@ -265,7 +264,7 @@ for index, rowzillow in zillow_props.iterrows():
                     list_40.append(rowzillow)
                 # if income level is close to 100 percent above the threshhold level
                 elif percentThresh <= 1:
-                    rowzillow['desirability'] = "Average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold"
+                    rowzillow['household_median_income_on_threshold'] = str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold"
                     print("[!!!!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) + ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
                     property_basic_analysis(rowzillow)
                     #Demographic analysis:
