@@ -78,7 +78,7 @@ correct_supportingzillow_dataset(sold_data)
 
 
 #Filter all the adresses with a certain income threshhold by zip codes
-thresh = 65000
+thresh = 60000
 #Create good props dataframe
 
 good_props10 = pd.DataFrame()
@@ -281,6 +281,7 @@ good_props10 = pd.concat(list_10, axis=1,join='outer').reset_index()
 good_props25 = pd.concat(list_25, axis=1,join='outer').reset_index()
 good_props100 = pd.concat(list_100, axis=1,join='outer').reset_index()
 good_props40 = pd.concat(list_40, axis=1,join='outer').reset_index()
+
 #Datetime thing
 import datetime
 current_date_and_time = datetime.datetime.now()
@@ -305,11 +306,11 @@ writer = pd.ExcelWriter(filename,engine='xlsxwriter')
 
 
 #Saving as workbook
-good_props10.to_excel(writer, sheet_name='10 Percent', index=False)
-good_props25.to_excel(writer, sheet_name='25 Percent', index=False)
-good_props40.to_excel(writer, sheet_name='40 Percent', index=False)
-good_props100.to_excel(writer, sheet_name='100 Percent', index=False)
-unwanted_props.to_excel(writer, sheet_name='Unwanted', index=False)
+good_props10.transpose().to_excel(writer, sheet_name='10 Percent', index=False)
+good_props25.transpose().to_excel(writer, sheet_name='25 Percent', index=False)
+good_props40.transpose().to_excel(writer, sheet_name='40 Percent', index=False)
+good_props100.transpose().to_excel(writer, sheet_name='100 Percent', index=False)
+unwanted_props.transpose().to_excel(writer, sheet_name='Unwanted', index=False)
 zillow_props.to_excel(writer, sheet_name="full_data", index=False)
 
 
