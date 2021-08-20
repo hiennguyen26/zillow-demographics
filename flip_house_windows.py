@@ -2,13 +2,13 @@
 from numpy import blackman, negative
 import pandas as pd
 
-zillow_props = pd.read_excel("Scraped Data/Test_Files/Test_File.xlsx")
+zillow_props = pd.read_excel("Scraped Data/Zillow/Properties_Zillow_Aug18_Below700K.xlsx")
 mass_data = pd.read_excel("Massachusetts_IncomeByZipDemographics.xlsx")
 rent_data = pd.read_excel("Scraped Data/Zillow/Properties_Zillow_Aug9_Rent.xlsx")
 sold_data = pd.read_excel("Scraped Data/Zillow/Properties_Sold_Aug9.xlsx")
 
 #Filter all the adresses with a certain income threshhold by zip codes
-thresh = 60000
+thresh = 95000
 
 def fix_zip(series):
       return series.astype(str).str.extract('(\d+)', expand=False).str.zfill(5)
@@ -171,13 +171,13 @@ def pricesqfeet_analysis(rowzillow, rowmassdata):
             counter_sold += 1
         else:
             continue
-        average_sold_persqfeet = 0
-        if counter_sold > 0:
-            average_sold_persqfeet = total_sold_persqfeet / counter_sold
-        else: 
-            rowzillow['compare_$sqft_sold_inZip'] = "Cannot find other homes to compare"
-            print("Cannot find other homes within the zip code")
-        percentage_diff_sold = (pricesqfeet - average_sold_persqfeet) / pricesqfeet
+    average_sold_persqfeet = 0
+    if counter_sold > 0:
+        average_sold_persqfeet = total_sold_persqfeet / counter_sold
+    else: 
+        rowzillow['compare_$sqft_sold_inZip'] = "Cannot find other homes to compare"
+        print("Cannot find other homes within the zip code")
+    percentage_diff_sold = (pricesqfeet - average_sold_persqfeet) / pricesqfeet
     # Analysis against listed rentals
     if pricesqfeet > average_sold_persqfeet:
         rowzillow['compare_$sqft_sold_inZip'] = "Higher by " + str("{:.2f}".format(percentage_diff_sold*100)) + "%"
@@ -369,10 +369,10 @@ writer = pd.ExcelWriter(filename,engine='xlsxwriter')
 
 
 #Saving as workbook
-good_props10.transpose().to_excel(writer, sheet_name='10 Percent', index=False)
-good_props25.transpose().to_excel(writer, sheet_name='25 Percent', index=False)
-good_props40.transpose().to_excel(writer, sheet_name='40 Percent', index=False)
-good_props100.transpose().to_excel(writer, sheet_name='100 Percent', index=False)
+good_props10.transpose().to_excel(writer, sheet_name='0-10% above Threshold', index=False)
+good_props25.transpose().to_excel(writer, sheet_name='10-25% above Threshold', index=False)
+good_props40.transpose().to_excel(writer, sheet_name='25-40% above Threshold', index=False)
+good_props100.transpose().to_excel(writer, sheet_name='40-100% above Threshold', index=False)
 unwanted_props.transpose().to_excel(writer, sheet_name='Unwanted', index=False)
 zillow_props.to_excel(writer, sheet_name="full_data", index=False)
 
