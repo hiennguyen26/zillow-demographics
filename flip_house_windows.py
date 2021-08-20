@@ -265,8 +265,6 @@ def rent_analysis(row):
         print()
 
 ######################
-
-
 unwanted_list = []
 list_10 = []
 list_25 = []
@@ -345,12 +343,13 @@ good_props25 = pd.concat(list_25, axis=1,join='outer').reset_index()
 good_props100 = pd.concat(list_100, axis=1,join='outer').reset_index()
 good_props40 = pd.concat(list_40, axis=1,join='outer').reset_index()
 
-#Datetime thing
+#Datetime 
 import datetime
 current_date_and_time = datetime.datetime.now()
 current_date_and_time_string = str(current_date_and_time)
 date = list(current_date_and_time_string)
 
+#TODO: Substring this plz jesus
 date[4] = "_"
 date[7] = "_"
 date[10] = "_"
