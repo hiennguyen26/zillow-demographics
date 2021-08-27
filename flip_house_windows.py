@@ -2,13 +2,13 @@
 from numpy import blackman, negative
 import pandas as pd
 
-zillow_props = pd.read_excel("Scraped Data/Zillow/Properties_Zillow_Aug18_Below700K.xlsx")
-mass_data = pd.read_excel("Massachusetts_IncomeByZipDemographics.xlsx")
-rent_data = pd.read_excel("Scraped Data/Zillow/Properties_Zillow_Aug9_Rent.xlsx")
-sold_data = pd.read_excel("Scraped Data/Zillow/Properties_Sold_Aug9.xlsx")
+zillow_props = pd.read_excel("zillowflipping/Scraped Data/Zillow/Properties_Zillow_Aug26_Below750K.xlsx")
+mass_data = pd.read_excel("zillowflipping/Massachusetts_IncomeByZipDemographics.xlsx")
+rent_data = pd.read_excel("zillowflipping/Scraped Data/Zillow/Properties_Zillow_Aug26_Rentals.xlsx")
+sold_data = pd.read_excel("zillowflipping/Scraped Data/Zillow/Properties_Zillow_Aug26_Sold.xlsx")
 
 #Filter all the adresses with a certain income threshhold by zip codes
-thresh = 95000
+thresh = 70000
 
 def fix_zip(series):
       return series.astype(str).str.extract('(\d+)', expand=False).str.zfill(5)
