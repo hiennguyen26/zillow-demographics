@@ -362,7 +362,7 @@ extension = ".xlsx"
 
 #Export good props for manual imagery analysis:
 
-filename = r"/Users/hiennguyen/Desktop/WORK /House_Flipping/ZillowScraper/zillowflipping/results" + usedate + extension
+filename = "/Users/hiennguyen/Desktop/WORK /House_Flipping/ZillowScraper/zillowflipping/results/goodprops" + usedate + extension
 #3 worksheets separately to income area disparities:
 writer = pd.ExcelWriter(filename,engine='xlsxwriter')
 
