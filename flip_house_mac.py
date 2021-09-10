@@ -2,10 +2,10 @@
 from numpy import blackman, negative
 import pandas as pd
 
-zillow_props = pd.read_excel("zillowflipping/Scraped Data/Zillow/Properties_Zillow_Aug26_Below750K.xlsx")
-mass_data = pd.read_excel("zillowflipping/Massachusetts_IncomeByZipDemographics.xlsx")
-rent_data = pd.read_excel("zillowflipping/Scraped Data/Zillow/Properties_Zillow_Aug26_Rentals.xlsx")
-sold_data = pd.read_excel("zillowflipping/Scraped Data/Zillow/Properties_Zillow_Aug26_Sold.xlsx")
+zillow_props = pd.read_excel("ZillowScraper/zillowflipping/Scraped Data/Zillow/Properties_Zillow_Sept9_Under625K.xlsx")
+mass_data = pd.read_excel("ZillowScraper/zillowflipping/Massachusetts_IncomeByZipDemographics.xlsx")
+rent_data = pd.read_excel("ZillowScraper/zillowflipping/Scraped Data/Zillow/Properties_Zillow_Aug26_Rentals.xlsx")
+sold_data = pd.read_excel("ZillowScraper/zillowflipping/Scraped Data/Zillow/Properties_Zillow_Aug26_Sold.xlsx")
 
 #Filter all the adresses with a certain income threshhold by zip codes
 thresh = 70000
