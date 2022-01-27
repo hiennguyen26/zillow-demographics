@@ -196,7 +196,10 @@ def pricesqfeet_analysis(rowzillow, rowmassdata):
     for index, rowsold in sold_data.iterrows():
         sold_housevalue = float(rowsold['price'])
         sold_livingarea = float(rowsold['area'])
-        sold_pricesqfeet = (sold_housevalue / sold_livingarea)
+        if sold_livingarea == 0:
+            continue
+        else: 
+            sold_pricesqfeet = (sold_housevalue / sold_livingarea)
         if zipcheck == rowsold['zip']:
             total_sold_persqfeet += sold_pricesqfeet
             counter_sold += 1
@@ -391,7 +394,7 @@ unwanted_props = pd.concat(unwanted_list, axis=1).reset_index()
 good_props10 = pd.concat(list_10, axis=1, join='outer').reset_index()
 good_props25 = pd.concat(list_25, axis=1, join='outer').reset_index()
 good_props100 = pd.concat(list_100, axis=1, join='outer').reset_index()
-good_props40 = pd.concat(list_40, axis=1, join='outer').reset_index()
+
 
 # Datetime
 current_date_and_time = datetime.datetime.now()
@@ -411,7 +414,7 @@ extension = ".xlsx"
 
 # Export good props for manual imagery analysis:
 
-filename = r"/Users/hiennguyen/Desktop/WORK /House_Flipping/ZillowScraper/zillowflipping/results/results" + usedate + extension
+filename = r"C:/Users/henry/Desktop/Google Backup/House Flipping/zillowflipping/results" + usedate + extension
 # 3 worksheets separately to income area disparities:
 writer = pd.ExcelWriter(filename, engine='xlsxwriter')
 
