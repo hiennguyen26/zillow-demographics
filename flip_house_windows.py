@@ -1,6 +1,6 @@
 # Analysis for a house flip imports, sort by median household income by zip codes, return URL
 import datetime
-from numpy import blackman, negative
+from numpy import blackman, full, negative
 import pandas as pd
 
 zillow_props = pd.read_excel("Scraped Data\Zillow\Properties_Zillow_Jan23_Below800kMiami.xlsx")
@@ -8,8 +8,8 @@ mass_data = pd.read_excel("Miami_IncomeByZipDemographics.xlsx")
 rent_data = pd.read_excel("Scraped Data\Zillow\Properties_Zillow_Jan23_Rentals800k_Miami.xlsx")
 sold_data = pd.read_excel("Scraped Data\Zillow\Properties_Zillow_Jan23_Below800kMiamiSold.xlsx")
 
-# Filter all the adresses with a certain income threshhold by zip codes
-thresh = 70000
+# # Filter all the adresses with a certain income threshhold by zip codes
+# thresh = 25000
 
 
 def fix_zip(series):
@@ -88,6 +88,7 @@ good_props25 = pd.DataFrame()
 good_props40 = pd.DataFrame()
 good_props100 = pd.DataFrame()
 unwanted_props = pd.DataFrame()
+good_props = pd.DataFrame()
 
 # Function to sort hte list by second item of tuple
 
@@ -187,7 +188,11 @@ def pricesqfeet_analysis(rowzillow, rowmassdata):
     # Print sq feet and calculate sqfeet
     housevalue = float(rowzillow['price'])
     livingarea = float(rowzillow['area'])
-    pricesqfeet = housevalue / livingarea
+    if livingarea == 0:
+        livingarea = 1
+        pricesqfeet = housevalue / livingarea
+    else:
+        pricesqfeet = housevalue / livingarea
     zipcheck = rowzillow['zip']
     total_sold_persqfeet = 0
     rowzillow['$/sqft'] = "$" + str("{:.0f}".format(pricesqfeet))
@@ -304,15 +309,12 @@ def rent_analysis(row):
               str("{:.2f}".format(percentage_diff_rentsold*100)) + "%")
         print("----------------------------------------------------------------------")
         print()
+        
 
 
-######################
-unwanted_list = []
-list_10 = []
-list_25 = []
-list_40 = []
-list_100 = []
-
+#####Function to run #####
+full_list = []
+#Function to scrape everything without threshold. 
 # Filtering real estate for loops and insert to worksheets
 for index, rowzillow in zillow_props.iterrows():
     #print(prop, row['zip'], row['address'])
@@ -322,78 +324,106 @@ for index, rowzillow in zillow_props.iterrows():
         checkzipmass = rowmassdata['zip_code']
         if checkzip == checkzipmass:
             incomecheck = rowmassdata['median_household_income']
-            # if income of zip code is below the threshhold level
-            if incomecheck <= thresh:
-                rowzillow['household_median_income_on_threshold'] = "[X] Property is undesired at " + \
-                    rowzillow['address'] + ', ' + \
-                    "since it is below the " + str(thresh) + " income level"
-                print("[X] Property is undesired at " + rowzillow['address'] +
-                      ', ' + "since it is below the " + str(thresh) + " income level")
-                print()
-                unwanted_list.append(rowzillow)
-                # income level is above or equal the threshold.
-                # if income level is close to 10 percent above the threshhold level
-            else:
-                percentThresh = ((incomecheck - thresh) / thresh)
-                if percentThresh <= 0.1:
-                    rowzillow['household_median_income_on_threshold'] = str(
-                        "{:.2f}".format(percentThresh*100))
-                    print("[!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) +
-                          ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
-                    property_basic_analysis(rowzillow)
-                    # $/sqfeet analysis:
-                    pricesqfeet_analysis(rowzillow, rowmassdata)
-                    # Demographic analysis:
-                    demographic_analysis(rowzillow, rowmassdata)
-                    rent_analysis(rowzillow)
-                    list_10.append(rowzillow)
-                # if income level is close to 25 percent above the threshhold level
-                elif percentThresh <= 0.25:
-                    rowzillow['household_median_income_on_threshold'] = str(
-                        "{:.2f}".format(percentThresh*100))
-                    print("[!!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) +
-                          ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
-                    property_basic_analysis(rowzillow)
-                    # $/sqfeet analysis:
-                    pricesqfeet_analysis(rowzillow, rowmassdata)
-                    # Demographic analysis:
-                    demographic_analysis(rowzillow, rowmassdata)
-                    rent_analysis(rowzillow)
-                    list_25.append(rowzillow)
-                # if income level is close to 40 percent above the threshhold level
-                elif percentThresh <= 0.40:
-                    rowzillow['household_median_income_on_threshold'] = str(
-                        "{:.2f}".format(percentThresh*100))
-                    print("[!!!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) +
-                          ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
-                    property_basic_analysis(rowzillow)
-                    # $/sqfeet analysis:
-                    pricesqfeet_analysis(rowzillow, rowmassdata)
-                    # Demographic analysis:
-                    demographic_analysis(rowzillow, rowmassdata)
-                    rent_analysis(rowzillow)
-                    list_40.append(rowzillow)
-                # if income level is close to 100 percent above the threshhold level
-                elif percentThresh <= 1:
-                    rowzillow['household_median_income_on_threshold'] = str(
-                        "{:.2f}".format(percentThresh*100))
-                    print("[!!!!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) +
-                          ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
-                    property_basic_analysis(rowzillow)
-                    # $/sqfeet analysis:
-                    pricesqfeet_analysis(rowzillow, rowmassdata)
-                    # Demographic analysis:
-                    demographic_analysis(rowzillow, rowmassdata)
-                    rent_analysis(rowzillow)
-                    list_100.append(rowzillow)
-        else:
-            continue
+            property_basic_analysis(rowzillow)
+            # $/sqfeet analysis:
+            pricesqfeet_analysis(rowzillow, rowmassdata)
+            # Demographic analysis:
+            demographic_analysis(rowzillow, rowmassdata)
+            rent_analysis(rowzillow)
+            full_list.append(rowzillow)
 
 
-unwanted_props = pd.concat(unwanted_list, axis=1).reset_index()
-good_props10 = pd.concat(list_10, axis=1, join='outer').reset_index()
-good_props25 = pd.concat(list_25, axis=1, join='outer').reset_index()
-good_props100 = pd.concat(list_100, axis=1, join='outer').reset_index()
+# ######################
+# unwanted_list = []
+# list_10 = []
+# list_25 = []
+# list_40 = []
+# list_100 = []
+
+# # Filtering real estate for loops and insert to worksheets
+# for index, rowzillow in zillow_props.iterrows():
+#     #print(prop, row['zip'], row['address'])
+#     # failsafe zip doesn't exist in the other spreadsheet
+#     checkzip = rowzillow['zip']
+#     for index1, rowmassdata in mass_data.iterrows():
+#         checkzipmass = rowmassdata['zip_code']
+#         if checkzip == checkzipmass:
+#             incomecheck = rowmassdata['median_household_income']
+#             # if income of zip code is below the threshhold level
+#             if incomecheck <= thresh:
+#                 rowzillow['household_median_income_on_threshold'] = "[X] Property is undesired at " + \
+#                     rowzillow['address'] + ', ' + \
+#                     "since it is below the " + str(thresh) + " income level"
+#                 print("[X] Property is undesired at " + rowzillow['address'] +
+#                       ', ' + "since it is below the " + str(thresh) + " income level")
+#                 print()
+#                 unwanted_list.append(rowzillow)
+#                 # income level is above or equal the threshold.
+#                 # if income level is close to 10 percent above the threshhold level
+#             else:
+#                 percentThresh = ((incomecheck - thresh) / thresh)
+#                 if percentThresh <= 0.1:
+#                     rowzillow['household_median_income_on_threshold'] = str(
+#                         "{:.2f}".format(percentThresh*100))
+#                     print("[!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) +
+#                           ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
+#                     property_basic_analysis(rowzillow)
+#                     # $/sqfeet analysis:
+#                     pricesqfeet_analysis(rowzillow, rowmassdata)
+#                     # Demographic analysis:
+#                     demographic_analysis(rowzillow, rowmassdata)
+#                     rent_analysis(rowzillow)
+#                     list_10.append(rowzillow)
+#                 # if income level is close to 25 percent above the threshhold level
+#                 elif percentThresh <= 0.25:
+#                     rowzillow['household_median_income_on_threshold'] = str(
+#                         "{:.2f}".format(percentThresh*100))
+#                     print("[!!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) +
+#                           ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
+#                     property_basic_analysis(rowzillow)
+#                     # $/sqfeet analysis:
+#                     pricesqfeet_analysis(rowzillow, rowmassdata)
+#                     # Demographic analysis:
+#                     demographic_analysis(rowzillow, rowmassdata)
+#                     rent_analysis(rowzillow)
+#                     list_25.append(rowzillow)
+#                 # if income level is close to 40 percent above the threshhold level
+#                 elif percentThresh <= 0.40:
+#                     rowzillow['household_median_income_on_threshold'] = str(
+#                         "{:.2f}".format(percentThresh*100))
+#                     print("[!!!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) +
+#                           ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
+#                     property_basic_analysis(rowzillow)
+#                     # $/sqfeet analysis:
+#                     pricesqfeet_analysis(rowzillow, rowmassdata)
+#                     # Demographic analysis:
+#                     demographic_analysis(rowzillow, rowmassdata)
+#                     rent_analysis(rowzillow)
+#                     list_40.append(rowzillow)
+#                 # if income level is close to 100 percent above the threshhold level
+#                 elif percentThresh <= 1:
+#                     rowzillow['household_median_income_on_threshold'] = str(
+#                         "{:.2f}".format(percentThresh*100))
+#                     print("[!!!!] Found desired property at " + rowzillow['address'] + " at price: " + str(rowzillow['price']) +
+#                           ", average median income: " + str(incomecheck) + "$ above " + str("{:.2f}".format(percentThresh*100)) + r"% threshold")
+#                     property_basic_analysis(rowzillow)
+#                     # $/sqfeet analysis:
+#                     pricesqfeet_analysis(rowzillow, rowmassdata)
+#                     # Demographic analysis:
+#                     demographic_analysis(rowzillow, rowmassdata)
+#                     rent_analysis(rowzillow)
+#                     list_100.append(rowzillow)
+#         else:
+#             continue
+
+
+# unwanted_props = pd.concat(unwanted_list, axis=1).reset_index()
+# good_props10 = pd.concat(list_10, axis=1, join='outer').reset_index()
+# good_props25 = pd.concat(list_25, axis=1, join='outer').reset_index()
+# good_props40 = pd.concat(list_40, axis=1, join='outer').reset_index()
+# good_props100 = pd.concat(list_100, axis=1, join='outer').reset_index()
+
+good_props = pd.concat(full_list, axis=1, join='outer').reset_index()
 
 
 # Datetime
@@ -413,22 +443,26 @@ extension = ".xlsx"
 
 
 # Export good props for manual imagery analysis:
-
 filename = r"C:/Users/henry/Desktop/Google Backup/House Flipping/zillowflipping/results" + usedate + extension
 # 3 worksheets separately to income area disparities:
 writer = pd.ExcelWriter(filename, engine='xlsxwriter')
 
 
-# Saving as workbook
-good_props10.transpose().to_excel(
-    writer, sheet_name='0-10% above Threshold', index=False)
-good_props25.transpose().to_excel(
-    writer, sheet_name='10-25% above Threshold', index=False)
-good_props40.transpose().to_excel(
-    writer, sheet_name='25-40% above Threshold', index=False)
-good_props100.transpose().to_excel(
-    writer, sheet_name='40-100% above Threshold', index=False)
-unwanted_props.transpose().to_excel(writer, sheet_name='Unwanted', index=False)
+# # Saving as workbook
+# good_props10.transpose().to_excel(
+#     writer, sheet_name='0-10% above Threshold', index=False)
+# good_props25.transpose().to_excel(
+#     writer, sheet_name='10-25% above Threshold', index=False)
+# good_props40.transpose().to_excel(
+#     writer, sheet_name='25-40% above Threshold', index=False)
+# good_props100.transpose().to_excel(
+#     writer, sheet_name='40-100% above Threshold', index=False)
+# unwanted_props.transpose().to_excel(writer, sheet_name='Unwanted', index=False)\
+    
+good_props.transpose().to_excel(
+    writer, sheet_name='Analysis', index=False)
+
+
 zillow_props.to_excel(writer, sheet_name="full_data", index=False)
 
 
