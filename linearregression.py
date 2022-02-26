@@ -16,7 +16,7 @@ def run_model(df):
     print(model.fit(cov_type='HC0').summary())
 
 df = pd.read_excel(
-    'zillowflipping/results/ZillowAnalysis_Threshold95K_Aug18.xlsx')   
+    './results/ZillowAnalysis_Threshold95K_Aug18.xlsx')   
 
 run_model(df)
 
