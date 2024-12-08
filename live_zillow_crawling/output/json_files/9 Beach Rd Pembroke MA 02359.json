@@ -1,0 +1,95 @@
+{
+  "address": {
+    "street_address": "9 Beach Rd",
+    "city": "Pembroke",
+    "state": "MA",
+    "zipcode": "02359"
+  },
+  "agent": {
+    "name": "Maria DeOliveira",
+    "brokerage": "Trust Realty Solutions, LLC"
+  },
+  "images": [
+    {
+      "url": "https://maps.googleapis.com/maps/api/staticmap?center=42.050053,-70.8209&zoom=15&size=384x288&maptype=roadmap&key=AIzaSyARFMLB1na-BBWf7_R3-5YOQQaHqEJf6RQ&scale=2&signature=EOV9gMGSXtz32YjbXPgsLXOvkDo="
+    }
+  ],
+  "interior": {
+    "bedrooms": 3,
+    "bathrooms": 3,
+    "full_bathrooms": 2,
+    "flooring": [
+      "Wood",
+      "Tile"
+    ],
+    "has_fireplace": false,
+    "heating": [
+      "Baseboard",
+      "Propane"
+    ],
+    "cooling": [
+      "Central Air"
+    ],
+    "total_area_sqft": 1580,
+    "livable_area_sqft": 1580
+  },
+  "property_details": {
+    "property_type": "SingleFamily",
+    "subtype": [
+      "Single Family Residence"
+    ],
+    "exterior_features": [
+      "Porch"
+    ],
+    "lot_size_sqft": 5112,
+    "year_built": 1950,
+    "sewer": "Private Sewer",
+    "water": "Public"
+  },
+  "community": {
+    "hoa_fee": 0.0
+  },
+  "financials": {
+    "price": 570000.0,
+    "price_per_sqft": 361.0,
+    "tax_assessed_value": 410100.0,
+    "annual_tax_amount": 4934.0,
+    "date_on_market": "2024-09-12"
+  },
+  "price_history": [],
+  "tax_history": [],
+  "monthly_cost": {
+    "estimated_payment": 3492.0,
+    "property_taxes": 537.0,
+    "home_insurance": 171.0
+  },
+  "schools": [
+    {
+      "name": "Bryantville Elementary School",
+      "grade_levels": "K-6",
+      "distance_mi": 0.4,
+      "rating": 5.0
+    },
+    {
+      "name": "Pembroke Community Middle School",
+      "grade_levels": "7-8",
+      "distance_mi": 1.6,
+      "rating": 7.0
+    },
+    {
+      "name": "Pembroke High School",
+      "grade_levels": "9-12",
+      "distance_mi": 1.2,
+      "rating": 7.0
+    }
+  ],
+  "open_houses": [],
+  "special_features": [
+    "Waterfront lifestyle",
+    "Renovated colonial",
+    "New porch",
+    "New kitchen",
+    "New windows",
+    "Tranquil pond views"
+  ]
+}
